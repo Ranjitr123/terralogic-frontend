@@ -1,6 +1,5 @@
 import { getHomePage } from "@/lib/wordpress";
 
-/** Dev helper: view raw WordPress API JSON for the homepage */
 export default async function ApiDebugPage() {
   let data: unknown;
   let error: string | null = null;
@@ -11,11 +10,14 @@ export default async function ApiDebugPage() {
     error = e instanceof Error ? e.message : "Unknown error";
   }
 
+  const baseUrl = process.env.WORDPRESS_API_URL ?? "(not set)";
+
   return (
     <main style={{ padding: "2rem", fontFamily: "monospace" }}>
       <h1>WordPress API Debug — Homepage</h1>
       <p>
-        Endpoint: <code>/wp-json/terralogic/v1/homepage?acf_format=standard</code>
+        Endpoint:{" "}
+        <code>POST {baseUrl}/wp-json/api/pages/home</code>
       </p>
       {error ? (
         <pre style={{ color: "crimson" }}>{error}</pre>

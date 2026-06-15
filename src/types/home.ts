@@ -1,13 +1,55 @@
 import type { AcfImage } from "@/lib/acf-helpers";
 
-/** Mirrors ACF fields used in wp-content/themes/terralogic/index.php */
+/** Response from POST /wp-json/api/pages/home */
+export interface HeadlessApiResponse<T> {
+  status: boolean;
+  message: string;
+  data: T;
+}
 
-export interface BannerSlide {
+export interface HeroBannerSlide {
   heading?: string;
+  sub_heading?: string;
   description?: string;
+  image?: string;
+  cta_text?: string;
+  cta_url?: string;
+}
+
+export interface HeroBanner {
+  layout?: string;
+  sliders?: HeroBannerSlide[];
+}
+
+export interface ServiceCardItem {
+  icon?: string;
+  image?: string;
+  title?: string;
+  description?: string;
+  content?: string;
+  cta_text?: string;
+  cta_url?: string;
+  cta_icon?: string;
   button_name?: string;
   button_link?: string;
-  image?: AcfImage;
+}
+
+export interface ServicesBlock {
+  layout?: string;
+  title?: string;
+  heading?: string;
+  sub_heading?: string;
+  service_subheading?: string;
+  service_cards?: ServiceCardItem[];
+  cards_section?: ServiceCardItem[];
+  cards?: ServiceCardItem[];
+}
+
+/** Page sections returned by the headless API (extend as backend adds layouts) */
+export interface HomePageData {
+  hero_banner?: HeroBanner;
+  slider_service?: ServicesBlock;
+  our_services?: ServicesBlock;
 }
 
 export interface ServiceCard {
@@ -102,34 +144,4 @@ export interface AboutContent {
   descriptions?: string;
   button_text?: string;
   button_link?: string;
-}
-
-export interface HomeAcf {
-  banner_slider?: BannerSlide[];
-  slider_service?: SliderService[];
-  technologies_section?: TechnologiesSection[];
-  awards_heading?: string;
-  recognition?: RecognitionItem[];
-  client_content?: string;
-  client_section_images?: ClientSectionImages[];
-  works?: WorksSection[];
-  workimage?: AcfImage;
-  icon_sections?: IconSection[];
-  testimonial?: TestimonialHeader[];
-  slider_testimonial?: SliderTestimonial[];
-  approach_content?: ApproachContent[];
-  our_approach?: OurApproachItem[];
-  xenwingo_content?: XenwingoContent[];
-  content?: AboutContent[];
-}
-
-export interface WpPage {
-  id: number;
-  slug: string;
-  title: { rendered: string };
-  acf?: HomeAcf;
-  yoast_head_json?: {
-    title?: string;
-    description?: string;
-  };
 }

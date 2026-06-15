@@ -1,56 +1,111 @@
-import type { SliderService, TechnologiesSection } from "@/types/home";
-import { acfImageUrl } from "@/lib/acf-helpers";
+import type { ServiceCardItem, ServicesBlock } from "@/types/home";
 
 type Props = {
-  sliderService?: SliderService[];
-  technologiesSection?: TechnologiesSection[];
+  section?: ServicesBlock;
 };
 
-/** Replaces index.php slider_service + technologies_section */
-export default function ServicesSection({ sliderService, technologiesSection }: Props) {
-  return (
-    <section className="home-section">
-      {sliderService?.map((block, idx) => (
-        <div key={idx}>
-          <div className="home-section__header">
-            <h2 className="home-section__label">{block.heading}</h2>
-            <h3 className="home-section__title">{block.service_subheading}</h3>
-          </div>
-          <div className="home-grid home-grid--3">
-            {block.cards_section?.map((card, cardIdx) => (
-              <article key={cardIdx} className="home-card">
-                {card.image && (
-                  <img src={acfImageUrl(card.image)} alt="" className="home-card__icon" />
-                )}
-                <h4 className="home-card__title">{card.title}</h4>
-                <p className="home-card__desc">{card.content}</p>
-                {card.button_link && (
-                  <a href={card.button_link} className="home-link">
-                    {card.button_name} →
-                  </a>
-                )}
-              </article>
-            ))}
-          </div>
-        </div>
-      ))}
+function stripHtml(html: string): string {
+  return html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\r\n/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
-      {technologiesSection?.map((tech, idx) => (
-        <div key={`tech-${idx}`} className="home-tech">
-          <h3 className="home-section__title">{tech.heading}</h3>
-          <ul className="home-tech__list">
-            {tech.section_cards?.map((item, itemIdx) => (
-              <li key={itemIdx} className="home-tech__item">
-                {item.image && (
-                  <img src={acfImageUrl(item.image)} alt="" className="home-card__icon" />
-                )}
-                <h4>{item.section_heading}</h4>
-                <p>{item.section_content}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+function getCards(section?: ServicesBlock): ServiceCardItem[] {
+  return (
+    section?.service_cards ??
+    section?.cards_section ??
+    section?.cards ??
+    []
+  );
+}
+
+function getLabel(section?: ServicesBlock): string | undefined {
+  if (section?.title) return section.title;
+  if (section?.service_subheading) return section.heading;
+  if (section?.sub_heading) return section.sub_heading;
+  return undefined;
+}
+
+function getTitle(section?: ServicesBlock): string | undefined {
+  if (section?.title) return section.heading;
+  if (section?.service_subheading) return section.service_subheading;
+  if (section?.sub_heading && section?.heading) return section.heading;
+  return section?.heading;
+}
+
+function cardImage(card: ServiceCardItem): string | undefined {
+  const src = card.icon ?? card.image;
+  return src || undefined;
+}
+
+function cardDescription(card: ServiceCardItem): string | undefined {
+  const raw = card.description ?? card.content;
+  if (!raw) return undefined;
+  return raw.includes("<") ? stripHtml(raw) : raw.replace(/\r\n/g, " ").trim();
+}
+
+function cardLink(card: ServiceCardItem): string | undefined {
+  return card.cta_url ?? card.button_link;
+}
+
+function cardLinkText(card: ServiceCardItem): string {
+  return card.cta_text ?? card.button_name ?? "Know More";
+}
+
+export default function ServicesSection({ section }: Props) {
+  const cards = getCards(section);
+  const label = getLabel(section);
+  const title = getTitle(section);
+
+  if (!label && !title && !cards.length) return null;
+
+  return (
+    <section className="home-services">
+      <div className="home-services__inner">
+        {(label || title) && (
+          <header className="home-services__header">
+            {label && <p className="home-services__label">{label}</p>}
+            {title && <h2 className="home-services__title">{title}</h2>}
+          </header>
+        )}
+
+        {cards.length > 0 && (
+          <div className="home-services__grid">
+            {cards.map((card, idx) => {
+              const link = cardLink(card);
+              const linkText = cardLinkText(card);
+              const description = cardDescription(card);
+              const image = cardImage(card);
+
+              return (
+                <article key={idx} className="home-services__card">
+                  {image && (
+                    <img
+                      src={image}
+                      alt=""
+                      className="home-services__icon"
+                    />
+                  )}
+                  {card.title && (
+                    <h3 className="home-services__card-title">{card.title}</h3>
+                  )}
+                  {description && (
+                    <p className="home-services__card-desc">{description}</p>
+                  )}
+                  {link && (
+                    <a href={link} className="home-services__link">
+                      {linkText}
+                      <span aria-hidden>→</span>
+                    </a>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </section>
   );
 }
